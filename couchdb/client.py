@@ -533,6 +533,24 @@ class Database(object):
             doc['_rev'] = rev
         return id, rev
 
+    def upsert(self, doc, **options):
+        """Create a new document or update an existing document by specifying
+        specific keys to be updated
+        """
+        if '_id' in doc:
+            try:
+                res = _doc_resource(self.resource, doc['_id'])
+                body = res.get_json()[2]
+                body = _loop_dict(doc,body)
+                _, _, data = res.put_json(body=body, **options)
+                id, rev = data['id'], data.get('rev')
+            except Exception as error:
+                print(repr(error))
+    #            id, rev = self.save(doc, **options)                    
+        else:
+            id, rev = self.save(doc, **options)
+        return id, rev
+
     def cleanup(self):
         """Clean up old design document indexes.
 
@@ -1164,6 +1182,19 @@ def _path_from_name(name, type):
         return name.split('/')
     design, name = name.split('/', 1)
     return ['_design', design, type, name]
+
+def _loop_dict(src,tar):
+    for k, v in src.items():
+        if not k.startswith('_'):
+            if isinstance(v, dict):
+                _loop_dict(v,tar[k])
+            else:
+                if v:
+                    tar[k] = v
+                else:
+                    del tar[k]
+    return tar
+            
 
 
 class Document(dict):
