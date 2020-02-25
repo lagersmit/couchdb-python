@@ -11,6 +11,9 @@ from .http import HTTPError, PreconditionFailed, Resource, \
         ResourceConflict, ResourceNotFound, ServerError, Session, \
         Unauthorized, Forbidden
 
+# This is customer specific!
+from .isahtocouch import Objects
+
 try:
     __version__ = __import__('pkg_resources').get_distribution('CouchDB').version
 except:
