@@ -544,9 +544,8 @@ class Database(object):
                 body = _loop_dict(doc,body)
                 _, _, data = res.put_json(body=body, **options)
                 id, rev = data['id'], data.get('rev')
-            except Exception as error:
-                print(repr(error))
-    #            id, rev = self.save(doc, **options)                    
+            except:
+                id, rev = self.save(doc, **options)                    
         else:
             id, rev = self.save(doc, **options)
         return id, rev
@@ -866,50 +865,22 @@ class Database(object):
 
 
 
-    def query(self, map_fun, reduce_fun=None, language='javascript',
-              wrapper=None, **options):
-        """Execute an ad-hoc query (a "temp view") against the database.
-
-        Note: not supported for CouchDB version >= 2.0.0
-
-        >>> server = Server()
-        >>> db = server.create('python-tests')
-        >>> db['johndoe'] = dict(type='Person', name='John Doe')
-        >>> db['maryjane'] = dict(type='Person', name='Mary Jane')
-        >>> db['gotham'] = dict(type='City', name='Gotham City')
-        >>> map_fun = '''function(doc) {
-        ...     if (doc.type == 'Person')
-        ...         emit(doc.name, null);
-        ... }'''
-        >>> for row in db.query(map_fun):
-        ...     print(row.key)
-        John Doe
-        Mary Jane
-
-        >>> for row in db.query(map_fun, descending=True):
-        ...     print(row.key)
-        Mary Jane
-        John Doe
-
-        >>> for row in db.query(map_fun, key='John Doe'):
-        ...     print(row.key)
-        John Doe
-
-        >>> del server['python-tests']
-
-        :param map_fun: the code of the map function
-        :param reduce_fun: the code of the reduce function (optional)
-        :param language: the language of the functions, to determine which view
-                         server to use
-        :param wrapper: an optional callable that should be used to wrap the
-                        result rows
-        :param options: optional query string parameters
-        :return: the view results
-        :rtype: `ViewResults`
+    def query(self, view, key=None, value=None, **options):
+        """Execute a query (a "permamanent view") against the database from 
+        _design/index/_views.
         """
-        return TemporaryView(self.resource('_temp_view'), map_fun,
-                             reduce_fun, language=language,
-                             wrapper=wrapper)(**options)
+        results = self.view('_design/index/_view/'+view)
+        if key:
+            matches = []
+            for row in results:
+                if row['key'] == key and row['value'] == value:
+                    matches.append(row['id'])
+        else:
+            matches = {}
+            for row in results:
+                matches.update({row['value']:row['id']})
+                    
+        return matches
 
     def update(self, documents, **options):
         """Perform a bulk update or insertion of the given documents using a
