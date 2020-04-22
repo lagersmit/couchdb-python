@@ -81,12 +81,13 @@ class Interpreter(object):
         
     def getCouchObjects(self):
         for row in self.db.view('_design/index/_view/object'):
-            self.couchObjects.update({
-                                row['value']['object']:{
-                                        'id':row['id'],
-                                        'modified':row['value']['modified']
-                                        }
-                                })
+            if row['value']:
+                self.couchObjects.update({                   
+                    row['value']['object']:{
+                                'id':row['id'],
+                                'modified':row['value']['modified']
+                                }
+                        })
             
     def uploadDocument(self,path,description='',rev='',tags=[],suffix=''):
         docDB = server['couch']['documents']
