@@ -58,6 +58,99 @@ class Interpreter(object):
             'reports':psycopg2.connect("host=reports.lagersmit.com dbname=lagersmit user=lagersmit password=lagersmit")
             }
         self.schema = {
+                        'reports':{
+                                'type':'object',
+                                'title':'report',
+                                'target_db':'servicereports_1',
+                                'uniqueKey':'OrdNr',
+                                'query':lambda row: self.__run_sql_query__("SELECT *, dbo.T_DossierMain.LastUpdatedOn AS 'modified', dbo.T_CustomerAddress.Name AS Customer FROM dbo.T_DossierMain LEFT JOIN dbo.T_CustomerAddress ON dbo.T_DossierMain.CustId = dbo.T_CustomerAddress.CustId WHERE dbo.T_DossierMain.OrdType = '06' AND dbo.T_DossierMain.LastUpdatedOn > '2020-05-25'"),
+                                'properties':{
+                                        'created':{
+                                                'type':'date',
+                                                'fcn':lambda row: str(datetime.now().isoformat())
+                                                },
+                                        'modified':{
+                                                'type':'date',
+                                                'fcn':lambda row:  str(datetime.now().isoformat())
+                                                },
+                                         "status": {
+                                            "released": {
+                                                    'type':'boolean',
+                                                    'fcn':lambda row: False
+                                                    },
+                                            "approved_by": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: ""
+                                                },
+                                            "approve_date": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: ""
+                                                },
+                                            "revision": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: ""
+                                                },
+                                            "revision_description": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: "Original issue"
+                                                }
+                                          },
+                                        "general_info": {
+                                            "ls": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: row['OrdNr']
+                                                },
+                                            "po": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: row['OrdRef']
+                                                },
+                                            "report_date": "",
+                                            "customer": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: row['Customer']
+                                                },
+                                            "customer_reference": "",
+                                            "yard": "",
+                                            "city": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: row['City']
+                                                },
+                                            "country": "",
+                                            "service_group": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: "Supreme"
+                                                },
+                                            "remarks": "",
+                                            "internal_remarks": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: row['Info']
+                                                },
+                                            "oil_type": "",
+                                            "status": "",
+                                            "cover_picture": "",
+                                            "service_reasons": {
+                                                    "type":"string",
+                                                    "fcn":lambda row: [row['Description']]
+                                                },
+                                            "misc": {
+                                              "berth": "",
+                                              "stern_tube_drain": "",
+                                              "stern_tube_drained_by": "",
+                                              "forward_bearing": "",
+                                              "aft_bearing": "",
+                                              "findings_cause_remarks": ""
+                                            }
+                                          },
+                                          "engineers": [],
+                                          "vessels": [],
+                                          "seals": [],
+                                          "signatures": [],
+                                          "contacts": [],
+                                          "documents": [],
+                                          "actions": [],
+                                          "checklists": []
+                                        }
+                                },
                         'sites':{
                                 'type':'object',
                                 'title':'vessel',
