@@ -127,7 +127,7 @@ class Interpreter(object):
                                                 },
                                             "oil_type": "",
                                             "status": "",
-                                            "cover_picture": "",
+                                            "cover_picture": {},
                                             "service_reasons": {
                                                     "type":"string",
                                                     "fcn":lambda row: [row['Description']]
