@@ -74,26 +74,29 @@ class Interpreter(object):
                                                 'fcn':lambda row:  str(datetime.now().isoformat())
                                                 },
                                          "status": {
-                                            "released": {
-                                                    'type':'boolean',
-                                                    'fcn':lambda row: False
-                                                    },
-                                            "approved_by": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: ""
-                                                },
-                                            "approve_date": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: ""
-                                                },
-                                            "revision": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: ""
-                                                },
-                                            "revision_description": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: "Original issue"
-                                                }
+                                                 "type":"object",
+                                                 "properties":{
+                                                    "released": {
+                                                            'type':'boolean',
+                                                            'fcn':lambda row: False
+                                                            },
+                                                    "approved_by": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: ""
+                                                        },
+                                                    "approve_date": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: ""
+                                                        },
+                                                    "revision": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: ""
+                                                        },
+                                                    "revision_description": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: "Original issue"
+                                                        }
+                                                    }
                                           },
                                         "general_info": {
                                             "ls": {
