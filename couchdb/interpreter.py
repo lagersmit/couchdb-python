@@ -44,8 +44,9 @@ REQUIREMENTS:
 
 
 class Interpreter(object):
-    def __init__(self,target=None,date_limit="2020-01-01",master='isah',slave='couch'):
+    def __init__(self,target=None,date_limit="2020-01-01",master='isah',slave='couch',onlyNew=False):
         self.db = []
+        self.onlyNew = onlyNew
         self.date_limit = date_limit
         self.servers = {
             'isah': pyodbc.connect(
@@ -63,7 +64,7 @@ class Interpreter(object):
                                 'title':'report',
                                 'target_db':'servicereports_1',
                                 'uniqueKey':'OrdNr',
-                                'query':lambda row: self.__run_sql_query__("SELECT *, dbo.T_DossierMain.LastUpdatedOn AS 'modified', dbo.T_CustomerAddress.Name AS Customer FROM dbo.T_DossierMain LEFT JOIN dbo.T_CustomerAddress ON dbo.T_DossierMain.CustId = dbo.T_CustomerAddress.CustId WHERE dbo.T_DossierMain.OrdType = '06' AND dbo.T_DossierMain.LastUpdatedOn > '2020-05-25'"),
+                                'query':lambda row: self.__run_sql_query__("SELECT *, dbo.T_DossierMain.LastUpdatedOn AS 'modified', dbo.T_CustomerAddress.Name AS Customer FROM dbo.T_DossierMain LEFT JOIN dbo.T_CustomerAddress ON dbo.T_DossierMain.CustId = dbo.T_CustomerAddress.CustId WHERE dbo.T_DossierMain.OrdType = '06' AND dbo.T_CustomerAddress.CustAddrCode = '' AND dbo.T_DossierMain.LastUpdatedOn > '" + self.date_limit + "'"),
                                 'properties':{
                                         'created':{
                                                 'type':'date',
@@ -99,59 +100,131 @@ class Interpreter(object):
                                                     }
                                           },
                                         "general_info": {
-                                            "ls": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: row['OrdNr']
-                                                },
-                                            "po": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: row['OrdRef']
-                                                },
-                                            "report_date": "",
-                                            "customer": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: row['Customer']
-                                                },
-                                            "customer_reference": "",
-                                            "yard": "",
-                                            "city": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: row['City']
-                                                },
-                                            "country": "",
-                                            "service_group": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: "Supreme"
-                                                },
-                                            "remarks": "",
-                                            "internal_remarks": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: row['Info']
-                                                },
-                                            "oil_type": "",
-                                            "status": "",
-                                            "cover_picture": {},
-                                            "service_reasons": {
-                                                    "type":"string",
-                                                    "fcn":lambda row: [row['Description']]
-                                                },
-                                            "misc": {
-                                              "berth": "",
-                                              "stern_tube_drain": "",
-                                              "stern_tube_drained_by": "",
-                                              "forward_bearing": "",
-                                              "aft_bearing": "",
-                                              "findings_cause_remarks": ""
-                                            }
+                                                "type":"object",
+                                                "properties":{
+                                                    "ls": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: row['OrdNr'].strip()
+                                                        },
+                                                    "po": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: row['OrdRef'].strip()
+                                                        },
+                                                    "report_date": {
+                                                                    "type":"string",
+                                                                    "fcn":lambda row: ""
+                                                                },
+                                                    "customer": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: row['Customer'].strip()
+                                                        },
+                                                    "customer_reference": {
+                                                                    "type":"string",
+                                                                    "fcn":lambda row: ""
+                                                                },
+                                                    "yard": {
+                                                                    "type":"string",
+                                                                    "fcn":lambda row: ""
+                                                                },
+                                                    "city": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: row['City'].strip()
+                                                        },
+                                                    "country": {
+                                                                    "type":"string",
+                                                                    "fcn":lambda row: row['CountryCode'].strip()
+                                                                },
+                                                    "service_group": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: "Supreme"
+                                                        },
+                                                    "remarks": {
+                                                                    "type":"string",
+                                                                    "fcn":lambda row: ""
+                                                                },
+                                                    "internal_remarks": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: row['Info']
+                                                        },
+                                                    "oil_type": {
+                                                                    "type":"string",
+                                                                    "fcn":lambda row: ""
+                                                                },
+                                                    "status": {
+                                                                    "type":"string",
+                                                                    "fcn":lambda row: ""
+                                                                },
+                                                    "cover_picture": {
+                                                                    "type":"string",
+                                                                    "fcn":lambda row: {}
+                                                                },
+                                                    "service_reasons": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: [row['Description'].strip()]
+                                                        },
+                                                    "misc": {
+                                                            "type":"object",
+                                                            "properties":{
+                                                                  "berth": {
+                                                                                "type":"string",
+                                                                                "fcn":lambda row: ""
+                                                                            },
+                                                                  "stern_tube_drain": {
+                                                                                "type":"boolean",
+                                                                                "fcn":lambda row: False
+                                                                            },
+                                                                  "stern_tube_drained_by": {
+                                                                                "type":"string",
+                                                                                "fcn":lambda row: ""
+                                                                            },
+                                                                  "forward_bearing": {
+                                                                                "type":"string",
+                                                                                "fcn":lambda row: ""
+                                                                            },
+                                                                  "aft_bearing": {
+                                                                                "type":"string",
+                                                                                "fcn":lambda row: ""
+                                                                            },
+                                                                  "findings_cause_remarks": {
+                                                                                "type":"string",
+                                                                                "fcn":lambda row: ""
+                                                                            }
+                                                                      }
+                                                                  }
+                                                      }
                                           },
-                                          "engineers": [],
-                                          "vessels": [],
-                                          "seals": [],
-                                          "signatures": [],
-                                          "contacts": [],
-                                          "documents": [],
-                                          "actions": [],
-                                          "checklists": []
+                                          "engineers": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: []
+                                                        },
+                                          "vessels": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: []
+                                                        },
+                                          "seals": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: []
+                                                        },
+                                          "signatures": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: []
+                                                        },
+                                          "contacts": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: []
+                                                        },
+                                          "documents": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: []
+                                                        },
+                                          "actions": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: []
+                                                        },
+                                          "checklists": {
+                                                            "type":"string",
+                                                            "fcn":lambda row: []
+                                                        }
                                         }
                                 },
                         'sites':{
@@ -559,12 +632,13 @@ class Interpreter(object):
     def getSlaveObjects(self):
         for row in self.db.view('_design/index/_view/object'):
             if row['value']:
-                self.slaveObjects.update({                   
-                    row['value']['object']:{
-                                'id':row['id'],
-                                'modified':row['value']['modified']
-                                }
-                        })
+                if 'object' in row['value']:
+                    self.slaveObjects.update({                   
+                        row['value']['object']:{
+                                    'id':row['id'],
+                                    'modified':row['value']['modified']
+                                    }
+                            })
             else:
                 print(row['id'])
             
@@ -659,14 +733,16 @@ class Interpreter(object):
         for obj in self.masterObjects:
             try:
                 if datetime.strptime(str(obj['modified']),"%Y-%m-%d %H:%M:%S.%f").timestamp() > datetime.strptime(self.slaveObjects[obj[self.schema[self.target]['uniqueKey']].strip()]['modified'],"%Y-%m-%dT%H:%M:%S.%f").timestamp():
-                    self.outOfDate.append(obj)
+                    if not self.onlyNew:
+                        self.outOfDate.append(obj)
             except Exception as error:
                 print('Exception raised for ' + obj[self.schema[self.target]['uniqueKey']] + ': New item or out of date; adding item to sync queue. (' + repr(error) + ')')
                 if self.slaveObjects:
                     if not obj[self.schema[self.target]['uniqueKey']].strip() in self.slaveObjects.keys():
                         self.newItems.append(obj)
                     else:
-                        self.outOfDate.append(obj)
+                        if not self.onlyNew:
+                            self.outOfDate.append(obj)
                 else:
                     self.newItems.append(obj)
                         
